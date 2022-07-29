@@ -18,8 +18,10 @@ module.exports = {
       "singleline": 10,
       "multiline": {
         "max": 1,
-        "allowFirstLine": false
-      }
+        "allowFirstLine": false  
+      },
+      'no-console':'off',
+      'no-irregular-whitespace':'off'
     }],
     "vue/singleline-html-element-content-newline": "off",
     "vue/multiline-html-element-content-newline":"off",
