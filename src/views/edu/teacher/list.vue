@@ -1,7 +1,39 @@
 <template>
   <div class="app-container">
-    <!-- 表格 -->
+    <!--查询表单-->
+    <el-form :inline="true" class="demo-form-inline">
+      <el-form-item>
+        <el-input v-model="teacherQuery.name" placeholder="讲师名"/>
+      </el-form-item>
+      <el-form-item>
+        <el-select v-model="teacherQuery.level" clearable placeholder="讲师头衔">
+          <el-option :value="1" label="高级讲师"/>
+          <el-option :value="2" label="首席讲师"/>
+        </el-select>
+      </el-form-item>
+      <el-form-item label="添加时间">
+        <el-date-picker
+          v-model="teacherQuery.begin"
+          type="datetime"
+          placeholder="选择开始时间"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          default-time="00:00:00"
+        />
+      </el-form-item>
+      <el-form-item>
+        <el-date-picker
+          v-model="teacherQuery.end"
+          type="datetime"
+          placeholder="选择截止时间"
+          value-format="yyyy-MM-dd HH:mm:ss"
+          default-time="00:00:00"
+        />
+      </el-form-item>
+      <el-button type="primary" icon="el-icon-search" @click="getList()">查询</el-button>
+      <el-button type="default" @click="resetData()">清空</el-button>
+    </el-form>
 
+    <!-- 表格 -->
     <el-table
       :data="list"
       element-loading-text="数据加载中"
@@ -40,7 +72,7 @@
         </template>
       </el-table-column>
     </el-table>
-    分页
+    <!-- 分页 -->
     <el-pagination
       :current-page="page"
       :page-size="limit"
@@ -61,7 +93,12 @@ export default {
       total: 0,
       page: 1,
       limit: 10,
-      teacherQuery: {}
+      teacherQuery: {
+        name: '',
+        level: '',
+        begin: '',
+        end: ''
+      }
     }
   },
   created() {
@@ -77,12 +114,45 @@ export default {
         .then((response) => {
           this.list = response.data.rows
           this.total = response.data.total
-          console.log(this.list)
-          console.log(this.total)
+          console.log(this.teacherQuery)
         }) // 请求成功
         .catch((error) => {
           console.log(error)
         }) // 请求失败
+    },
+    resetData() {
+    this.teacherQuery = {}
+    this.getList()
+    },
+    
+    removeDataById(id) {
+        // debugger
+        // console.log(memberId)
+        this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
+            confirmButtonText: '确定',
+            cancelButtonText: '取消',
+            type: 'warning'
+        }).then(() => {
+            return teacher.removeById(id)
+        }).then(() => {
+            this.getList()
+            this.$message({
+                type: 'success',
+                message: '删除成功!'
+            })
+        }).catch((response) => { // 失败
+            if (response === 'cancel') {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                })
+            } else {
+                this.$message({
+                    type: 'error',
+                    message: '删除失败'
+                })
+            }
+        })
     }
   }
 }
