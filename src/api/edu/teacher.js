@@ -12,30 +12,37 @@ export default {
     })
   },
 
-  removeById(teacherId) {
-        return request({
-            url: `/eduservice/teacher/deleteById/${teacherId}`,
-            method: 'delete'
-        })
-    },
-  save(teacher) {
-      return request({
-          url: `/eduservice/teacher/add`,
-          method: 'post',
-          data: teacher
-      })
+  removeById(id) {
+    return request({
+      url: `/eduservice/teacher/deleteById/${id}`,
+      method: 'delete'
+    })
+  },
+  saveTeacher(teacher) {
+    return request({
+      url: `/eduservice/teacher/add`,
+      method: 'post',
+      data: teacher
+    })
   },
   getById(id) {
     return request({
-        url: `/eduservice/teacher/getById/${id}`,
-        method: 'get',
+      url: `/eduservice/teacher/getById/${id}`,
+      method: 'get',
     })
   },
-  updateById(teacher) {
+  updateTeacherInfo(teacher) {
     return request({
-        url: `/eduservice/teacher/updateById/${id}`,
-        method: 'post',
-        data: teacher
+      url: `/eduservice/teacher/updateById/${id}`,
+      method: 'post',
+      data: teacher
     })
-  }
+  },
+  updateTeacherInfo(teacher) {
+    return request({
+      url: `/eduservice/teacher/updateById`,
+      method: 'post',
+      data: teacher
+    })
+  },
 }

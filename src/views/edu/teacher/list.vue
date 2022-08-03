@@ -1,61 +1,66 @@
-<template>
-  <div class="app-container">
-    <!--查询表单-->
-    <el-form :inline="true" class="demo-form-inline">
-      <el-form-item>
-        <el-input v-model="teacherQuery.name" placeholder="讲师名" />
+.<template>
+  <div>
+    <!--多条件查询表单-->
+    <el-form
+      :inline="true"
+      class="demo-form-inline"
+      style="margin-left: 20px; margin-top: 12px"
+    >
+      <el-form-item label="名称">
+        <el-input
+          v-model="teacherQuery.name"
+          placeholder="请输入名称"
+        ></el-input>
       </el-form-item>
-      <el-form-item>
-        <el-select
-          v-model="teacherQuery.level"
-          clearable
-          placeholder="讲师头衔"
-        >
-          <el-option :value="1" label="高级讲师" />
-          <el-option :value="2" label="首席讲师" />
+      <el-form-item label="级别">
+        <el-select v-model="teacherQuery.level" placeholder="讲师头衔">
+          <el-option label="高级讲师" :value="1"></el-option>
+          <el-option label="特级讲师" :value="2"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="添加时间">
-        <el-date-picker
-          v-model="teacherQuery.begin"
-          type="datetime"
+        <el-time-picker
           placeholder="选择开始时间"
+          v-model="teacherQuery.begin"
           value-format="yyyy-MM-dd HH:mm:ss"
           default-time="00:00:00"
-        />
+          type="datetime"
+        ></el-time-picker>
       </el-form-item>
       <el-form-item>
-        <el-date-picker
-          v-model="teacherQuery.end"
-          type="datetime"
+        <el-time-picker
           placeholder="选择截止时间"
+          v-model="teacherQuery.end"
           value-format="yyyy-MM-dd HH:mm:ss"
           default-time="00:00:00"
-        />
+          type="datetime"
+        ></el-time-picker>
       </el-form-item>
-      <el-button type="primary" icon="el-icon-search" @click="getList()"
-        >查询</el-button
-      >
-      <el-button type="default" @click="resetData()">清空</el-button>
+      <el-form-item>
+        <el-button type="primary" icon="el-icon-search" @click="getList()"
+          >查询</el-button
+        >
+        <el-button type="default" @click="resetData()">清空</el-button>
+      </el-form-item>
     </el-form>
-
-    <!-- 表格 -->
     <el-table
       :data="list"
-      element-loading-text="数据加载中"
+      style="width: 100%"
       border
       fit
       highlight-current-row
+      element-loading-text="数据加载中"
+      v-loading="listLoading"
     >
-      <el-table-column label="序号" width="70" align="center">
+      <el-table-column prop="date" label="序号" width="70" align="center">
         <template slot-scope="scope">
           {{ (page - 1) * limit + scope.$index + 1 }}
         </template>
       </el-table-column>
-      <el-table-column prop="name" label="名称" width="80" />
+      <el-table-column prop="name" label="名称" width="80"> </el-table-column>
       <el-table-column label="头衔" width="80">
         <template slot-scope="scope">
-          {{ scope.row.level === 1 ? '高级讲师' : '首席讲师' }}
+          {{ scope.row.level === 1 ? "高级讲师" : "首席讲师" }}
         </template>
       </el-table-column>
       <el-table-column prop="intro" label="资历" />
@@ -72,98 +77,94 @@
             type="danger"
             size="mini"
             icon="el-icon-delete"
-            @click="removeDataById(scope.row.id)"
+            @click="removeById(scope.row.id)"
             >删除</el-button
           >
         </template>
       </el-table-column>
     </el-table>
-    <!-- 分页 -->
+    <!--分页组件-->
     <el-pagination
-      :current-page="page"
-      :page-size="limit"
+      background
+      layout="prev, pager, next,total,jumper"
       :total="total"
+      :page-size="limit"
       style="padding: 30px 0; text-align: center"
-      layout="total, prev, pager, next, jumper"
+      :current-page="page"
       @current-change="getList"
-    />
+    >
+    </el-pagination>
   </div>
 </template>
+
 <script>
-import teacher from '@/api/edu/teacher'
+//引入要调用的方法，teacher.js文件
+import teacher from "@/api/edu/teacher.js";
+
 export default {
+  //写核心代码位置
   data() {
-    // 定义变量和初始值
+    //1、定义变量和初始值
     return {
-      list: null,
-      total: 0,
-      page: 1,
-      limit: 10,
-      teacherQuery: {
-        name: '',
-        level: '',
-        begin: '',
-        end: ''
-      }
-    }
+      list: null, //查询之后给接口返回的数据装的集合
+      page: 1, //当前页
+      limit: 10, //每页显示记录数
+      teacherQuery: {}, //条件封装对象
+      total: 0, //总记录数
+    };
   },
   created() {
-    // 页面渲染之前执行，一般调用methods定义的方法
-    this.getList()
+    //页面渲染之前执行，调用method定义的方法
+    //调用
+    this.getList();
   },
   methods: {
-    // 创建具体的方法，掉用teacher.js的方法
+    //调用具体的方法，调用teacher.js定义的方法
+    //讲师列表的方法
     getList(page = 1) {
-      this.page = page
+      this.page = page;
       teacher
         .getTeacherListPage(this.page, this.limit, this.teacherQuery)
-        .then((response) => {
-          this.list = response.data.rows
-          this.total = response.data.total
-          console.log(this.teacherQuery)
-        }) // 请求成功
-        .catch((error) => {
-          console.log(error)
-        }) // 请求失败
+        .then((resp) => {
+          //resp接口返回的数据
+          // console.log(resp);
+          this.list = resp.data.rows;
+          console.log(this.list);
+          this.total = resp.data.total;
+          console.log(this.total);
+        }) //请求成功
+        .catch((err) => {
+          console.log(err);
+        }); //请求失败
     },
+    //清空方法
     resetData() {
-      this.teacherQuery = {}
-      this.getList()
+      //表单输入项数据清空
+      this.teacherQuery = {};
+      //查询所有讲师数据
+      this.getList();
     },
-
-    removeDataById(id) {
-      // debugger
-      // console.log(memberId)
-      this.$confirm('此操作将永久删除该记录, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      })
-        .then(() => {
-          return teacher.removeById(id)
-        })
-        .then(() => {
-          this.getList()
+    removeById(id) {
+      this.$confirm("此操作将永久删除该讲师记录, 是否继续?", "提示", {
+        confirmButtonText: "确定",
+        cancelButtonText: "取消",
+        type: "warning",
+      }).then(() => {
+        //点击确定，执行then方法
+        teacher.removeById(id).then((resp) => {
+          //删除成功
+          //提示信息
           this.$message({
-            type: 'success',
-            message: '删除成功!'
-          })
-        })
-        .catch((response) => {
-          // 失败
-          if (response === 'cancel') {
-            this.$message({
-              type: 'info',
-              message: '已取消删除'
-            })
-          } else {
-            this.$message({
-              type: 'error',
-              message: '删除失败'
-            })
-          }
-        })
-    }
-  }
-}
+            type: "success",
+            message: "删除成功!",
+          });
+          //刷新页面
+          this.getList();
+        });
+      });
+    },
+  },
+};
 </script>
+
+<style></style>

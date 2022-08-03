@@ -1,4 +1,4 @@
-<template>
+.<template>
   <div class="app-container">
     <el-form label-width="120px">
       <el-form-item label="讲师名称">
@@ -12,11 +12,11 @@
         />
       </el-form-item>
       <el-form-item label="讲师头衔">
-        <el-select v-model="teacher.level" clearable placeholder="请选择">
+        <el-select v-model="teacher.level" clearable placeholder="选择讲师头衔">
           <!--
-            数据类型一定要和取出的json中的一致，否则没法回填
-            因此，这里value使用动态绑定的值，保证其数据类型是number
-          -->
+数据类型一定要和取出的json中的一致，否则没法回填
+因此，这里value使用动态绑定的值，保证其数据类型是number
+-->
           <el-option :value="1" label="高级讲师" />
           <el-option :value="2" label="首席讲师" />
         </el-select>
@@ -26,109 +26,154 @@
       </el-form-item>
       <el-form-item label="讲师简介">
         <el-input v-model="teacher.intro" :rows="10" type="textarea" />
-      </el-form-item>
-      <!-- 讲师头像：TODO -->
-      <el-form-item>
+        <!-- 讲师头像：TODO -->
+        <!-- 讲师头像 -->
+        <el-form-item label="讲师头像">
+          <!-- 头衔缩略图 -->
+          <pan-thumb :image="teacher.avatar" />
+          <!-- 文件上传按钮 -->
+          <el-button
+            type="primary"
+            icon="el-icon-upload"
+            @click="imagecropperShow = true"
+            >更换头像
+          </el-button>
+          <!--
+v-show：是否显示上传组件
+:key：类似于id，如果一个页面多个图片上传控件，可以做区分
+:url：后台上传的url地址
+@close：关闭上传组件
+@crop-upload-success：上传成功后的回调 -->
+          <image-cropper
+            v-show="imagecropperShow"
+            :width="300"
+            :height="300"
+            :key="imagecropperKey"
+            :url="BASE_API + '/edu_oss/fileoss/upload'"
+            field="file"
+            @close="close"
+            @crop-upload-success="cropSuccess"
+          />
+        </el-form-item>
         <el-button
           :disabled="saveBtnDisabled"
           type="primary"
-          @click="saveOrUpdate"
+          @click="saveOrUpdate()"
           >保存</el-button
         >
       </el-form-item>
     </el-form>
   </div>
 </template>
+
 <script>
-import teacher from '@/api/edu/teacher'
+//引入对应的新增api方法
+import teacherApi from "@/api/edu/teacher.js";
+//引入头像组件
+import ImageCropper from "@/components/ImageCropper";
+import PanThumb from "@/components/PanThumb";
 export default {
+  components: { ImageCropper, PanThumb },
   data() {
     return {
       teacher: {
-        name: '',
+        name: "",
         sort: 0,
         level: 1,
-        career: '',
-        intro: '',
-        avatar: ''
+        career: "",
+        intro: "",
+        avatar: "",
       },
-      saveBtnDisabled: false // 保存按钮是否禁用,
-    }
+      saveBtnDisabled: false, // 保存按钮是否禁用,
+      //上传弹框组件是否显示
+      imagecropperShow: false,
+      //上传组件key值
+      imagecropperKey: 0,
+      //获取dev.env.js里面的ip:端口号地址
+      BASE_API: process.env.VUE_APP_BASE_API,
+    };
   },
-  created() {
-    console.log('created')
-    if (this.$route.params && this.$route.params.id) {
-      const id = this.$route.params.id
-      this.fetchDataById(id)
-    }
-  },
-  methods: {
-    // 根据id更新记录
 
-    updateData() {
-      this.saveBtnDisabled = true
-      teacher
-        .updateById(this.teacher)
-        .then((response) => {
-          return this.$message({
-            type: 'success',
-            message: '修改成功!'
-          })
-        })
-        .then((resposne) => {
-          this.$router.push({ path: '/teacher/list' })
-        })
-        .catch((response) => {
-          // console.log(response)
-          this.$message({
-            type: 'error',
-            message: '保存失败'
-          })
-        })
+  created() {
+    //在页面渲染之前
+    this.init();
+  },
+  watch: {
+    $route(to, from) {
+      //路由变化方式，当路由发送变化，方法就执行
+      console.log("watch $route");
+      this.init();
     },
-    // 根据id查询记录
-    fetchDataById(id) {
-      teacher
-        .getById(id)
-        .then((response) => {
-          this.teacher = response.data.item
-        })
-        .catch((response) => {
-          this.$message({
-            type: 'error',
-            message: '获取数据失败'
-          })
-        })
+  },
+
+  methods: {
+    close() {
+      //关闭上传弹框的方法
+      this.imagecropperShow = false;
+      //上传组件初始化
+      this.imagecropperKey = this.imagecropperKey + 1;
     },
-    saveOrUpdate() {
-      this.saveBtnDisabled = true
-      if (!this.teacher.id) {
-        this.saveData()
+    cropSuccess(data) {
+      //上传成功的方法
+      this.imagecropperShow = false;
+      //参数resp.data被封装到了方法参数data中了
+      this.teacher.avatar = data.url;
+      this.imagecropperKey = this.imagecropperKey + 1;
+    },
+    init() {
+      //判断路径中是否有id值
+      if (this.$route.params && this.$route.params.id) {
+        //从路径中获取id值
+        const id = this.$route.params.id;
+        //调用根据id查询的方法
+        this.getInfoById(id);
       } else {
-        this.updateData()
+        this.teacher = {};
       }
     },
     // 保存
     saveData() {
-      teacher
-        .save(this.teacher)
-        .then((response) => {
-          return this.$message({
-            type: 'success',
-            message: '保存成功!'
-          })
-        })
-        .then((resposne) => {
-          this.$router.push({ path: '/teacher/list' })
-        })
-        .catch((response) => {
-          // console.log(response)
-          this.$message({
-            type: 'error',
-            message: '保存失败'
-          })
-        })
-    }
-  }
-}
+      teacherApi.saveTeacher(this.teacher).then((resp) => {
+        //添加成功
+        //提示信息
+        this.$message({
+          message: "添加讲师记录成功",
+          type: "success",
+        });
+        //回到讲师列表 路由跳转
+        this.$router.push({ path: "/teacher/table" });
+      });
+    },
+    //根据id查询，数据回显
+    getInfoById(id) {
+      teacherApi.getById(id).then((resp) => {
+        this.teacher = resp.data.item;
+      });
+    },
+    //修改讲师的方法
+    updateTeacher() {
+      teacherApi.updateTeacherInfo(this.teacher).then((resp) => {
+        //提示信息
+        this.$message({
+          message: "修改讲师记录成功",
+          type: "success",
+        });
+        //回到讲师列表 路由跳转
+        this.$router.push({ path: "/teacher/table" });
+      });
+    },
+    saveOrUpdate() {
+      //判断修改还是新增操作
+      //根据teacher对象是否有id值来判断
+      if (!this.teacher.id) {
+        //没有id值，做【新增操作】
+        this.saveBtnDisabled = true;
+        this.saveData();
+      } else {
+        //有id值，做【修改操作】
+        this.updateTeacher();
+      }
+    },
+  },
+};
 </script>

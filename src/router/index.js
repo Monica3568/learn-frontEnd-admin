@@ -62,22 +62,87 @@ export const constantRoutes = [
     meta: { title: '讲师管理', icon: 'el-icon-s-help' },
     children: [
       {
-        path: 'list',
+        path: 'table',
         name: '讲师列表',
-        component: () => import('@/views/edu/teacher/list'),
+        component: () => import('@/views/edu/teacher/list.vue'),
         meta: { title: '讲师列表', icon: 'table' }
       },
       {
         path: 'save',
         name: '添加讲师',
-        component: () => import('@/views/edu/teacher/save'),
+        component: () => import('@/views/edu/teacher/save.vue'),
         meta: { title: '添加讲师', icon: 'tree' }
       },
       {
         path: 'edit/:id',
-        name:'EduTeacherEdit',
-        component: () => import('@/views/edu/teacher/save'),
-        meta: {title:'编辑教师',noCache:true},
+        name: 'EduTeacherEdit',
+        component: () => import('@/views/edu/teacher/save.vue'),
+        meta: { title: '编辑讲师', noCache: true },
+        hidden: true
+      }
+    ]
+  },
+  //课程分类
+  {
+    path: '/subject',
+    component: Layout,
+    redirect: '/subject/list',
+    name: 'Subject',
+    meta: { title: '课程分类管理', icon: 'nested' },
+    children: [
+      {
+        path: 'list',
+        name: '课程分类列表',
+        component: () => import('@/views/edu/subject/list.vue'),
+        meta: { title: '课程分类列表', icon: 'table' }
+      },
+      {
+        path: 'import',
+        name: '课程分类导入',
+        component: () => import('@/views/edu/subject/import.vue'),
+        meta: { title: '导入课程分类', icon: 'nested' }
+      }
+    ]
+  },
+  //课程信息管理
+  {
+    path: '/course',
+    component: Layout,
+    redirect: '/course/list',
+    name: '课程管理',
+    meta: { title: '课程管理', icon: 'nested' },
+    children: [
+      {
+        path: 'list',
+        name: '课程列表',
+        component: () => import('@/views/edu/course/list.vue'),
+        meta: { title: '课程列表', icon: 'table' }
+      },
+      {
+        path: 'info',
+        name: '添加课程',
+        component: () => import('@/views/edu/course/info.vue'),
+        meta: { title: '添加课程', icon: 'nested' }
+      },
+      {
+        path: 'info/:id',
+        name: 'EduCourseInfoEdit',
+        component: () => import('@/views/edu/course/info.vue'),
+        meta: { title: '编辑课程基本信息', noCache: true },
+        hidden: true
+      },
+      {
+        path: 'chapter/:id',
+        name: 'EduCourseChapterEdit',
+        component: () => import('@/views/edu/course/chapter.vue'),
+        meta: { title: '编辑课程大纲', noCache: true },
+        hidden: true
+      },
+      {
+        path: 'publish/:id',
+        name: 'EduCoursePublishEdit',
+        component: () => import('@/views/edu/course/publish.vue'),
+        meta: { title: '发布课程', noCache: true },
         hidden: true
       }
     ]
